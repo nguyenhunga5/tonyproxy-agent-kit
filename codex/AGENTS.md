@@ -1,0 +1,95 @@
+# TonyProxy
+
+To connect Codex to TonyProxy, paste `config.toml.snippet` into `~/.codex/config.toml`, run `codex mcp login tonyproxy`, and click Allow in the sheet TonyProxy shows. Change the port in the URL if you changed it in TonyProxy's Settings → MCP Server.
+
+<!-- tonyproxy-skill:start -->
+## When to call what
+
+TonyProxy is a macOS proxy inspector. Its MCP server is read-only: nine tools
+that read the traffic it captured. Cheap summaries first, then narrow lists,
+then one transaction at a time.
+
+- `tonyproxy_status` — once per conversation. Tells you the version, whether
+  capture is running, the active session and its transaction count.
+- `session_stats` or `session_digest` — before any listing. Stats gives the
+  total, status classes, the no-response count and latency (`p50Ms`, `p95Ms`,
+  `maxMs`). The digest is a short text with top errors and any error burst.
+- `group_by` — counts by `host`, `status`, `method`, `contentType` or
+  `process` when the question is "which host / app / status dominates".
+- `list_transactions` — always with a `filter`, and `limit` ≤ 50. Rows come
+  newest first. Page with `cursor` set to the previous reply's `nextCursor`;
+  stop when `nextCursor` is absent or you have enough.
+- `search_transactions` — like `list_transactions` plus `text`, matched in the
+  host, path and query.
+- `get_transaction` — one `id` at a time, from a list or search reply. Pass
+  `includeBodies: false` when headers are enough.
+- `export` — `format: "curl"` to hand the user a repro. Other formats: `har`,
+  `ndjson`, `csv`, `postman`, `openapi`. Pass `ids` from a list reply (up to
+  200) or a `filter`.
+- `list_sessions` — only when the user talks about an earlier capture.
+
+`filter` fields: `hosts` (subdomains match too), `apps`, `method`, `status`
+(`success`, `redirect`, `clientError`, `serverError`, `anyError`),
+`contentType` (`JSON`, `HTML`, `Image`, `Other`), `pathPrefix`, `searchText`,
+`minResponseBytes`, `minDurationMs`, `isGraphQL`, `isGRPC`, `isWebSocket`,
+`lastMinutes`. Use exactly these names and values; an unknown value is
+ignored, which silently widens the result.
+
+Do not page through a whole session to answer a counting question. Ask
+`session_stats` or `group_by` instead.
+
+## Worked flows
+
+Why did the last call to `<host>` fail?
+
+1. `session_digest` with `filter: { hosts: ["<host>"] }`.
+2. `list_transactions` with `filter: { hosts: ["<host>"], status: "anyError" }`,
+   `limit: 20`. Rows with no `status` and an `error` are failures too.
+3. `get_transaction` on the newest failing `id`.
+4. Explain from the status, the response headers and the response body. Quote
+   only the lines that matter.
+
+What changed between these two requests?
+
+1. `get_transaction` on the first `id`.
+2. `get_transaction` on the second `id`.
+3. Compare method, URL, request headers, request body, status and response
+   body. Report the differences only.
+
+Give me a cURL for the failing one.
+
+1. Find the `id` (flow one, step 2).
+2. `export` with `format: "curl"` and `ids: ["<id>"]`.
+3. Show the command from the reply's `text`. If the reply has a `path`
+   instead, the export was over 1 MiB; give the user the path.
+
+Which endpoint is slow?
+
+1. `session_stats`; read `latency.p95Ms`.
+2. `list_transactions` with `filter: { minDurationMs: <p95Ms> }`, `limit: 20`.
+3. Group the rows by host and path; name the worst few with their
+   `durationMs`. For a wider view, `group_by` with `groupBy: "host"` and the
+   same filter.
+
+## What you will not get
+
+- Bodies are capped. Each body has `size` (bytes on the wire),
+  `capturedBytes` (what TonyProxy stored) and `truncated` (true when the text
+  you got is shorter than `size`). Say so when `truncated` is true; do not
+  guess the missing part.
+- Credentials and sensitive query values come back as `«redacted»` unless the
+  user turned redaction off in TonyProxy. Do not ask the user to paste them.
+- Binary bodies are described, not returned: `kind: "binary"` with a
+  `sha256`. Pass `encoding: "base64"` to `get_transaction` only when the user
+  needs the bytes.
+- A body TonyProxy did not save comes back as `kind: "notSaved"`.
+- There are no write tools. You cannot replay, edit, block or delete traffic,
+  or change TonyProxy settings. Point the user at the app for that.
+
+## Session scope
+
+Every tool defaults to the active session. Pass `sessionId` (from
+`list_sessions`) only when the user points at an older capture. Keep using
+the same `sessionId` for the rest of that question, so that ids and cursors
+stay valid.
+<!-- tonyproxy-skill:end -->

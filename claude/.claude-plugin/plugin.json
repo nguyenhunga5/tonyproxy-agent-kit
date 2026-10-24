@@ -1,0 +1,6 @@
+{
+  "name": "tonyproxy",
+  "version": "0.1.0",
+  "description": "Read TonyProxy captures from Claude Code: sessions, transactions, stats, exports.",
+  "author": { "name": "Hung Nguyen Thanh" }
+}
