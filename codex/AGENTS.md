@@ -65,7 +65,7 @@ Give me a cURL for the failing one.
 
 Which endpoint is slow?
 
-1. `session_stats`; read `latency.p95Ms`.
+1. `session_stats`; read `stats.latency.p95Ms`.
 2. `list_transactions` with `filter: { minDurationMs: <p95Ms> }`, `limit: 20`.
 3. Group the rows by host and path; name the worst few with their
    `durationMs`. For a wider view, `group_by` with `groupBy: "host"` and the
