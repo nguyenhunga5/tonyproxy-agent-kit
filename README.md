@@ -18,17 +18,31 @@ examples below use the default port, 9095.
 
 ## Claude Code
 
-Register the server (Settings copies this line), then install the plugin:
+Install the plugin (CLI below, or add the marketplace on the plugins page in
+the desktop app and click Install):
 
 ```bash
-claude mcp add --transport http tonyproxy http://127.0.0.1:9095/mcp
 claude plugin marketplace add nguyenhunga5/tonyproxy-agent-kit
 claude plugin install tonyproxy@tonyproxy-agent-kit
 ```
 
-The plugin adds the `tonyproxy` skill and three commands: `/tp-why-failed
-[host]`, `/tp-curl <id>` and `/tp-slow [n]`. It has no server entry of its
-own, so the port is never hard-coded and the server is registered once.
+The plugin registers the server at the default port, 9095. Click **Connect**
+on the plugin (or `/mcp` → `plugin:tonyproxy:tonyproxy` → Authenticate);
+TonyProxy shows an Allow/Deny sheet once. The sign-in page is served over
+https with a certificate from TonyProxy's CA, so install and trust the CA
+first (Settings → Certificate).
+
+It also adds the `tonyproxy` skill and three commands: `/tp-why-failed
+[host]`, `/tp-curl <id>` and `/tp-slow [n]`.
+
+On a custom port, register the server by hand (Settings copies the line):
+
+```bash
+claude mcp add --transport http tonyproxy http://127.0.0.1:<port>/mcp
+```
+
+Upgrading from 0.1.0, where the server was registered by hand on 9095? Run
+`claude mcp remove tonyproxy` so the tools are not listed twice.
 
 ## Codex
 
