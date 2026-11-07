@@ -7,7 +7,7 @@ src="$root/shared/SKILL.md"
 
 {
   printf '%s\n' '---' 'name: tonyproxy' \
-    'description: Use when the user asks about traffic TonyProxy captured — failing calls, slow endpoints, request diffs, cURL repros.' \
+    'description: Use when the user asks about traffic TonyProxy captured — failing calls, slow endpoints, request diffs, cURL repros — or wants TonyProxy to mock, redirect, rewrite or hold requests.' \
     '---' ''
   cat "$src"
 } > "$root/claude/skills/tonyproxy/SKILL.md"
