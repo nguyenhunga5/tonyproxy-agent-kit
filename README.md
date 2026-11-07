@@ -2,9 +2,12 @@
 
 Skill text and client configs for the MCP server built into
 [TonyProxy](https://tonyapps.org), the macOS proxy inspector. The server
-exposes nine read-only tools over captured traffic; this kit teaches an agent
-to use them well (summaries before listings, small pages, one transaction at a
-time, `export` for cURL repros) and gives each client its config file.
+exposes nine tools that read captured traffic and, once you allow agents to
+make changes, tools that control capture and add Map Local, Map Remote,
+Rewrite and breakpoint rules. This kit teaches an agent to use them well
+(summaries before listings, small pages, one transaction at a time, `export`
+for cURL repros, cleaning up the rules it adds) and gives each client its
+config file.
 
 The tools themselves are not defined here: the server advertises them. The
 guidance lives once, in [`shared/SKILL.md`](shared/SKILL.md);
@@ -31,6 +34,10 @@ on the plugin (or `/mcp` → `plugin:tonyproxy:tonyproxy` → Authenticate);
 TonyProxy shows an Allow/Deny sheet once. The sign-in page is served over
 https with a certificate from TonyProxy's CA, so install and trust the CA
 first (Settings → Certificate).
+
+Write tools stay hidden until you turn on Settings → MCP → "Allow agents to
+make changes" and tick "Can control capture" or "Can change rules" for the
+client in Paired Clients. Pairing alone grants read access only.
 
 It also adds the `tonyproxy` skill and three commands: `/tp-why-failed
 [host]`, `/tp-curl <id>` and `/tp-slow [n]`.
